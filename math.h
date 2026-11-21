@@ -1,5 +1,20 @@
 #ifndef MATH_H
 #define MATH_H
+#include <cmath>
+#include <cassert>
+
+struct Vector2i
+{
+  int x;
+  int y;
+
+  Vector2i() {}
+  Vector2i(int _x, int _y)
+  {
+    x = _x;
+    y = _y;
+  }
+};
 
 struct Vector3f
 {
@@ -53,6 +68,48 @@ struct Vector3f
     z -= r.z;
 
     return *this;
+  }
+  Vector3f& Normalize();
+  void Rotate(float Angle, const Vector3f& V);
+};
+
+struct Quaternion
+{
+  float x, y, z, w;
+
+  Quaternion(float Angle, const Vector3f& V)
+  {
+    float SinHalfAngle = sinf(Angle/2);
+    float CosHalfAngle = cosf(Angle/2);
+
+    x = V.x * SinHalfAngle;
+    y = V.y * SinHalfAngle;
+    z = V.z * SinHalfAngle;
+    w = CosHalfAngle;
+  }
+
+  Quaternion(float _x, float _y, float _z, float _w)
+  {
+    x = _x;
+    y = _y;
+    z = _z;
+    w = _w;
+  }
+
+  void Normalize()
+  {
+    float Length = sqrtf(x * x + y * y + z * z + w * w);
+
+    x/=Length;
+    y/=Length;
+    z/=Length;
+    w/=Length;
+  }
+
+  Quaternion Conjugate() const
+  {
+    Quaternion ret(-x, -y, -z, w);
+    return ret;
   }
 };
 

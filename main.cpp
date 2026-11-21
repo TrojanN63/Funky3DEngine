@@ -19,11 +19,14 @@ GLint gWVPLocation;
 const char* pVSFileName = "../shader.vs";
 const char* pFSFileName = "../shader.fs";
 
-int width = 1280;
-int height = 800;
+int width = 1920;
+int height = 1200;
 
 Transform Cube;
-Camera Player;
+Vector3f CameraPos(0.0f, 0.0f, 0.0f);
+Vector3f CameraTarget(0.0f, 0.0f, 1.0f);
+Vector3f CameraUp(0.0f, 1.0f, 0.0f);
+Camera Player(width, height, CameraPos, CameraTarget, CameraUp);
 Projection Proj(width, height);
 
 static void RenderSceneCB()
@@ -31,7 +34,7 @@ static void RenderSceneCB()
   glClear(GL_COLOR_BUFFER_BIT);
 
   Cube.Scale(1.0f, 1.0f, 1.0f);
-  Cube.Position(0.0f, 0.0f, 0.0f);
+  Cube.Position(0.0f, 0.0f, 5.0f);
   Cube.Rotate(0.0f, 0.01f, 0.0f);
   
   Matrix4f Transformation = Cube.Matrix();
@@ -225,6 +228,18 @@ static void SpecialKeyboardCB(int key, int mouse_x, int mouse_y)
 {
   Player.KeyBoard(key);
 }
+static void PassiveMouseCB(int x, int y)
+{
+  Player.Mouse(x, y);
+}
+
+static void InitializeGlutCallbacks()
+{
+  glutDisplayFunc(RenderSceneCB);
+  glutKeyboardFunc(KeyboardCB);
+  glutSpecialFunc(SpecialKeyboardCB);
+  glutPassiveMotionFunc(PassiveMouseCB);
+}
 
 int main(int argc, char** argv)
 {
@@ -237,6 +252,13 @@ int main(int argc, char** argv)
   int y = 600;
   glutInitWindowPosition(x, y);
   int win = glutCreateWindow("Test");
+
+  //char game_mode_string[64];
+  //snprintf(game_mode_string, sizeof(game_mode_string), "%dx%d@32", width, height);
+  //glutGameModeString(game_mode_string);
+  //glutEnterGameMode();
+
+  InitializeGlutCallbacks();
 
   GLenum res = glewInit();
   if (res != GLEW_OK){
@@ -255,10 +277,6 @@ int main(int argc, char** argv)
   CreateIndexBuffer();
 
   CompileShaders();
-
-  glutDisplayFunc(RenderSceneCB);
-  glutKeyboardFunc(KeyboardCB);
-  glutSpecialFunc(SpecialKeyboardCB);
 
   glutMainLoop();
 
