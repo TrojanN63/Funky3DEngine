@@ -1,3 +1,6 @@
+#ifndef MATH_H
+#define MATH_H
+
 struct Vector3f
 {
   float x;
@@ -18,6 +21,38 @@ struct Vector3f
   Vector3f(float f)
   {
     x,y,z = f;
+  }
+  Vector3f Cross(const Vector3f& v) const
+  {
+    const float _x = y * v.z - z * v.y;
+    const float _y = z * v.x - x * v.z;
+    const float _z = x * v.y - y * v.x;
+
+    return Vector3f(_x, _y, _z);
+  }
+  Vector3f& operator*=(float f)
+  {
+    x *= f;
+    y *= f;
+    z *= f;
+
+    return *this;
+  }
+  Vector3f& operator+=(const Vector3f& r)
+  {
+    x += r.x;
+    y += r.y;
+    z += r.z;
+
+    return *this;
+  }
+  Vector3f& operator-=(const Vector3f& r)
+  {
+    x -= r.x;
+    y -= r.y;
+    z -= r.z;
+
+    return *this;
   }
 };
 
@@ -56,3 +91,5 @@ class Matrix4f
     }
 
 };
+
+#endif /* MATH_H */

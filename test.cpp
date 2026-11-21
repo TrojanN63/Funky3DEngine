@@ -5,60 +5,44 @@
 #include <vector>
 #include <fstream>
 #include <cmath>
-#include "math.h"
+#include "transform.h"
+#include "camera.h"
+#include "projection.h"
 
 using namespace std;
 
 GLuint VBO;
 GLuint IBO;
 
-GLint gTransformationLocation;
+GLint gWVPLocation;
 
-const char* pVSFileName = "shader.vs";
-const char* pFSFileName = "shader.fs";
+const char* pVSFileName = "../shader.vs";
+const char* pFSFileName = "../shader.fs";
+
+int width = 1280;
+int height = 800;
+
+Transform Cube;
+Camera Player;
+Projection Proj(width, height);
 
 static void RenderSceneCB()
 {
   glClear(GL_COLOR_BUFFER_BIT);
 
-  static float AngleRad = 0.0f;
-  static float DeltaA = 0.01f;
+  Cube.Scale(1.0f, 1.0f, 1.0f);
+  Cube.Position(0.0f, 0.0f, 0.0f);
+  Cube.Rotate(0.0f, 0.01f, 0.0f);
+  
+  Matrix4f Transformation = Cube.Matrix();
 
-  static float Offset = 0.0f;
-  static float DeltaO = 0.01f;
+  Matrix4f CameraTransform = Player.Matrix();
 
-  static float Scale = 0.5f;
+  Matrix4f Screen = Proj.Matrix();
 
-  AngleRad += DeltaA;
-  //Offset += DeltaO;
+  Matrix4f WVP = Screen * CameraTransform * Transformation;
 
-  Matrix4f Rotation(
-    Scale * cosf(AngleRad), 0.0f, Scale * -sinf(AngleRad), 0.0f,
-    0.0f, Scale, 0.0f, 0.0f,
-    Scale * sinf(AngleRad), 0.0f, Scale * cosf(AngleRad), 0.0f,
-    0.0f, 0.0f, 0.0f, 1.0f
-  );
-  Matrix4f Translation(
-    1.0f, 0.0f, 0.0f, 0.0f,
-    0.0f, 1.0f, 0.0f, 0.0f,
-    0.0f, 0.0f, 1.0f, 5.0f,
-    0.0f, 0.0f, 0.0f, 1.0f
-  );
-
-  float FOV = 0.5f;
-  float tanHalfFOV = tanf(FOV/2.0f);
-  float f = 1/tanHalfFOV;
-
-  Matrix4f Projection(
-    f, 0.0f, 0.0f, 0.0f,
-    0.0f, f, 0.0f, 0.0f,
-    0.0f, 0.0f, 1.0f, 0.0f,
-    0.0f, 0.0f, 1.0f, 0.0f
-  );
-
-  Matrix4f Transformation = Projection * Translation * Rotation;
-
-  glUniformMatrix4fv(gTransformationLocation, 1, GL_TRUE, &Transformation.m[0][0]);
+  glUniformMatrix4fv(gWVPLocation, 1, GL_TRUE, &WVP.m[0][0]);
   
   glBindBuffer(GL_ARRAY_BUFFER, VBO);
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO);
@@ -98,14 +82,14 @@ static void CreateVertexBuffer()
 {
   Vertex Vertices[8];
 
-  Vertices[0] = Vertex(1.0f, 1.0f, 1.0f);
-  Vertices[1] = Vertex(-1.0f, 1.0f, -1.0f);
-  Vertices[2] = Vertex(-1.0f, 1.0f, 1.0f);
-  Vertices[3] = Vertex(1.0f, -1.0f, -1.0f);
-  Vertices[4] = Vertex(-1.0f, -1.0f, -1.0f);
-  Vertices[5] = Vertex(1.0f, 1.0f, -1.0f);
-  Vertices[6] = Vertex(1.0f, -1.0f, 1.0f);
-  Vertices[7] = Vertex(-1.0f, -1.0f, 1.0f);
+  Vertices[0] = Vertex(0.5f, 0.5f, 0.5f);
+  Vertices[1] = Vertex(-0.5f, 0.5f, -0.5f);
+  Vertices[2] = Vertex(-0.5f, 0.5f, 0.5f);
+  Vertices[3] = Vertex(0.5f, -0.5f, -0.5f);
+  Vertices[4] = Vertex(-0.5f, -0.5f, -0.5f);
+  Vertices[5] = Vertex(0.5f, 0.5f, -0.5f);
+  Vertices[6] = Vertex(0.5f, -0.5f, 0.5f);
+  Vertices[7] = Vertex(-0.5f, -0.5f, 0.5f);
 
   glGenBuffers(1,&VBO);
   glBindBuffer(GL_ARRAY_BUFFER, VBO);
@@ -233,18 +217,24 @@ static void CompileShaders()
   glUseProgram(ShaderProgram);
 }
 
+static void KeyboardCB(unsigned char key, int mouse_x, int mouse_y)
+{
+  Player.KeyBoard(key);
+}
+static void SpecialKeyboardCB(int key, int mouse_x, int mouse_y)
+{
+  Player.KeyBoard(key);
+}
 
 int main(int argc, char** argv)
 {
   glutInit(&argc, argv);
   glutInitDisplayMode(GLUT_DOUBLE|GLUT_RGBA|GLUT_DEPTH);
 
-  int width = 800;
-  int height = 800;
   glutInitWindowSize(width, height);
 
-  int x = 200;
-  int y = 100;
+  int x = 1000;
+  int y = 600;
   glutInitWindowPosition(x, y);
   int win = glutCreateWindow("Test");
 
@@ -267,6 +257,8 @@ int main(int argc, char** argv)
   CompileShaders();
 
   glutDisplayFunc(RenderSceneCB);
+  glutKeyboardFunc(KeyboardCB);
+  glutSpecialFunc(SpecialKeyboardCB);
 
   glutMainLoop();
 
