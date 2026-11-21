@@ -75,8 +75,8 @@ void Camera::Update()
   target = View;
   target.Normalize();
 
-  up = target.Cross(U);
-  up.Normalize();
+  //up = target.Cross(U);
+  //up.Normalize();
 }
 
 void Camera::Position(float x, float y, float z)
@@ -88,13 +88,17 @@ void Camera::KeyBoard(int key)
 {
   switch (key) {
     case GLUT_KEY_UP:
-      target.x, target.y, target.z *= speed;
-      position += target;
+    {
+      Vector3f Front(0.0f, 0.0f, speed);
+      position += Front;
       break;
+    }
     case GLUT_KEY_DOWN:
-      target.x, target.y, target.z *= speed;
-      position -= target;
+    {
+      Vector3f Back(0.0f, 0.0f, -speed);
+      position += Back;
       break;
+    }
     case GLUT_KEY_LEFT:
     {
       Vector3f Left = target.Cross(up);
