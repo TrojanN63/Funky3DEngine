@@ -29,17 +29,18 @@ Vector3f CameraUp(0.0f, 1.0f, 0.0f);
 Camera Player(width, height, CameraPos, CameraTarget, CameraUp);
 Projection Proj(width, height);
 
-static void RenderSceneCB()
+static void Scene()
 {
   glClear(GL_COLOR_BUFFER_BIT);
 
   Cube.Scale(1.0f, 1.0f, 1.0f);
   Cube.Position(0.0f, 0.0f, 5.0f);
-  Cube.Rotate(0.0f, 0.01f, 0.0f);
+  Cube.Rotate(0.0f, 0.0f, 0.0f);
   
   Matrix4f Transformation = Cube.Matrix();
 
   Matrix4f CameraTransform = Player.Matrix();
+  Player.Move();
 
   Matrix4f Screen = Proj.Matrix();
 
@@ -220,25 +221,40 @@ static void CompileShaders()
   glUseProgram(ShaderProgram);
 }
 
-static void KeyboardCB(unsigned char key, int mouse_x, int mouse_y)
+static void KeyboardDown(unsigned char key, int mouse_x, int mouse_y)
 {
-  Player.KeyBoard(key);
+  Player.KeyDown(key);
 }
-static void SpecialKeyboardCB(int key, int mouse_x, int mouse_y)
+static void SpecialKeyboardDown(int key, int mouse_x, int mouse_y)
 {
-  Player.KeyBoard(key);
+  Player.KeyDown(key);
 }
-static void PassiveMouseCB(int x, int y)
+
+static void KeyboardUp(unsigned char key, int mouse_x, int mouse_y)
+{
+  Player.KeyUp(key);
+}
+static void SpecialKeyboardUp(int key, int mouse_x, int mouse_y)
+{
+  Player.KeyUp(key);
+}
+
+static void PassiveMouse(int x, int y)
 {
   Player.Mouse(x, y);
 }
 
 static void InitializeGlutCallbacks()
 {
-  glutDisplayFunc(RenderSceneCB);
-  glutKeyboardFunc(KeyboardCB);
-  glutSpecialFunc(SpecialKeyboardCB);
-  glutPassiveMotionFunc(PassiveMouseCB);
+  glutDisplayFunc(Scene);
+
+  glutKeyboardFunc(KeyboardDown);
+  glutKeyboardUpFunc(KeyboardUp);
+
+  glutSpecialFunc(SpecialKeyboardDown);
+  glutSpecialUpFunc(SpecialKeyboardUp);
+
+  glutPassiveMotionFunc(PassiveMouse);
 }
 
 int main(int argc, char** argv)
@@ -253,12 +269,9 @@ int main(int argc, char** argv)
   glutInitWindowPosition(x, y);
   int win = glutCreateWindow("Test");
 
-  //char game_mode_string[64];
-  //snprintf(game_mode_string, sizeof(game_mode_string), "%dx%d@32", width, height);
-  //glutGameModeString(game_mode_string);
-  //glutEnterGameMode();
-
   InitializeGlutCallbacks();
+  glutIgnoreKeyRepeat(1);
+  glutSetCursor(GLUT_CURSOR_NONE);
 
   GLenum res = glewInit();
   if (res != GLEW_OK){

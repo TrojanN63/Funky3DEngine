@@ -48,23 +48,25 @@ void Camera::Init()
 
 void Camera::Mouse(int x, int y)
 {
-  int DeltaX = x - mouse_position.x;
-  int DeltaY = y - mouse_position.y;
-
-  mouse_position.x = x;
-  mouse_position.y = y;
+  if (x == windowWidth/2 && y == windowHeight/2){
+    return;
+  }
+  int DeltaX = x - windowWidth/2;
+  int DeltaY = y - windowHeight/2;
 
   AngleH += (float)DeltaX / 2000.0f;
   AngleV += (float)DeltaY / 5000.0f;
 
   Update();
+
+  glutWarpPointer(windowWidth / 2, windowHeight / 2);
 }
 
 void Camera::Update()
 {
   Vector3f Yaxis(0.0f, 1.0f, 0.0f);
 
-  Vector3f View(1.0f, 0.0f, 0.0f);
+  Vector3f View(0.0f, 0.0f, 1.0f);
   View.Rotate(AngleH, Yaxis);
   View.Normalize();
 
@@ -75,8 +77,6 @@ void Camera::Update()
   target = View;
   target.Normalize();
 
-  //up = target.Cross(U);
-  //up.Normalize();
 }
 
 void Camera::Position(float x, float y, float z)
@@ -84,43 +84,47 @@ void Camera::Position(float x, float y, float z)
   position = Vector3f(x, y, z);
 }
 
-void Camera::KeyBoard(int key)
+void Camera::KeyDown(unsigned char key)
 {
-  switch (key) {
-    case GLUT_KEY_UP:
-    {
-      Vector3f Front(0.0f, 0.0f, speed);
-      position += Front;
-      break;
-    }
-    case GLUT_KEY_DOWN:
-    {
-      Vector3f Back(0.0f, 0.0f, -speed);
-      position += Back;
-      break;
-    }
-    case GLUT_KEY_LEFT:
-    {
-      Vector3f Left = target.Cross(up);
-      Left*=speed;
-      position += Left;
-      break;
-    }
-    case GLUT_KEY_RIGHT:
-    {
-      Vector3f Right = up.Cross(target);
-      Right*=speed;
-      position += Right;
-      break;
-    }
+  Keys[key] = true;
+}
+void Camera::KeyUp(unsigned char key)
+{
+  Keys[key] = false;
+}
+
+void Camera::Move()
+{
+  if (Keys['w']){
+    Vector3f Front(target.x, 0.0f, target.z);
+    Front *= speed;
+    position += Front;
+  }
+  if (Keys['s']){
+    Vector3f Front(target.x, 0.0f, target.z);
+    Front *= speed;
+    position -= Front;
+  }
+  if (Keys['a']){
+    Vector3f Left = target.Cross(up);
+    Left *= speed;
+    position += Left;
+  }
+  if (Keys['d']){
+    Vector3f Right = up.Cross(target);
+    Right*=speed;
+    position += Right;
   }
 }
 
 Matrix4f Camera::Matrix()
 {
   Vector3f N = target;
+  N.Normalize();
   Vector3f U = up.Cross(N);
+  U.Normalize();
   Vector3f V = N.Cross(U);
+  N.Normalize();
 
   Matrix4f Translation(
     1.0f, 0.0f, 0.0f, -position.x,
@@ -136,5 +140,5 @@ Matrix4f Camera::Matrix()
     0.0f, 0.0f, 0.0f, 1.0f
   );
 
-  return Translation * Rotation; 
+  return Rotation * Translation; 
 }

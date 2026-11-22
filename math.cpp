@@ -49,4 +49,11 @@ Vector3f& Vector3f::Normalize()
   return *this;
 }
 
+Vector3f& operator* (Vector3f& l, float r)
+{
+  l.x *= r;
+  l.y *= r;
+  l.z *= r;
 
+  return l;
+}
