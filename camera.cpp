@@ -107,12 +107,12 @@ void Camera::Move()
   }
   if (Keys['a']){
     Vector3f Left = target.Cross(up);
-    Left *= speed;
+    Left *= speed/2;
     position += Left;
   }
   if (Keys['d']){
     Vector3f Right = up.Cross(target);
-    Right*=speed;
+    Right*=speed/2;
     position += Right;
   }
 }

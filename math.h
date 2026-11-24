@@ -149,4 +149,46 @@ class Matrix4f
 
 };
 
+struct Vector2f
+{
+  float x;
+  float y;
+
+  Vector2f() {}
+  Vector2f(float _x, float _y)
+  {
+    x = _x;
+    y = _y;
+  }
+  Vector2f(const float* pFloat)
+  {
+    x,y = pFloat[0];
+  }
+  Vector2f(float f)
+  {
+    x,y = f;
+  }
+  Vector2f& operator*=(float f)
+  {
+    x *= f;
+    y *= f;
+
+    return *this;
+  }
+  Vector2f& operator+=(const Vector2f& r)
+  {
+    x += r.x;
+    y += r.y;
+
+    return *this;
+  }
+  Vector2f& operator-=(const Vector2f& r)
+  {
+    x -= r.x;
+    y -= r.y;
+
+    return *this;
+  }
+};
+
 #endif /* MATH_H */

@@ -8,13 +8,16 @@
 #include "transform.h"
 #include "camera.h"
 #include "projection.h"
+#include "texture.h"
 
 using namespace std;
 
 GLuint VBO;
 GLuint IBO;
 
-GLint gWVPLocation;
+GLuint gWVPLocation;
+GLuint gSamplerLocation;
+Texture* texture = NULL;
 
 const char* pVSFileName = "../shader.vs";
 const char* pFSFileName = "../shader.fs";
@@ -29,11 +32,24 @@ Vector3f CameraUp(0.0f, 1.0f, 0.0f);
 Camera Player(width, height, CameraPos, CameraTarget, CameraUp);
 Projection Proj(width, height);
 
+struct Vertex {
+  Vector3f pos;
+  Vector2f tex;
+
+  Vertex() {}
+
+  Vertex(const Vector3f& pos_, const Vector2f& tex_)
+  {
+    pos = pos_;
+    tex = tex_;
+  }
+};
+
 static void Scene()
 {
   glClear(GL_COLOR_BUFFER_BIT);
 
-  Cube.Scale(1.0f, 1.0f, 1.0f);
+  Cube.Scale(0.5f, 0.5f, 0.5f);
   Cube.Position(0.0f, 0.0f, 5.0f);
   Cube.Rotate(0.0f, 0.0f, 0.0f);
   
@@ -51,11 +67,14 @@ static void Scene()
   glBindBuffer(GL_ARRAY_BUFFER, VBO);
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO);
 
+  texture->Bind(GL_TEXTURE0);
+  glUniform1i(gSamplerLocation, 0);
+
   glEnableVertexAttribArray(0);
-  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6*sizeof(float),0);
+  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex),0);
 
   glEnableVertexAttribArray(1);
-  glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
+  glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)(3 * sizeof(float)));
   
   glDrawElements(GL_TRIANGLES,36,GL_UNSIGNED_INT,0);
 
@@ -66,34 +85,23 @@ static void Scene()
   glutSwapBuffers();
 }
 
-struct Vertex {
-  Vector3f pos;
-  Vector3f color;
-
-  Vertex() {}
-
-  Vertex(float x, float y, float z)
-  {
-    pos = Vector3f(x, y, z);
-    float red   = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
-    float green = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
-    float blue  = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
-    color = Vector3f(red, green, blue);
-  }
-};
-
 static void CreateVertexBuffer()
 {
   Vertex Vertices[8];
 
-  Vertices[0] = Vertex(0.5f, 0.5f, 0.5f);
-  Vertices[1] = Vertex(-0.5f, 0.5f, -0.5f);
-  Vertices[2] = Vertex(-0.5f, 0.5f, 0.5f);
-  Vertices[3] = Vertex(0.5f, -0.5f, -0.5f);
-  Vertices[4] = Vertex(-0.5f, -0.5f, -0.5f);
-  Vertices[5] = Vertex(0.5f, 0.5f, -0.5f);
-  Vertices[6] = Vertex(0.5f, -0.5f, 0.5f);
-  Vertices[7] = Vertex(-0.5f, -0.5f, 0.5f);
+  Vector2f t00 = Vector2f(0.0f, 0.0f);
+  Vector2f t01 = Vector2f(0.0f, 1.0f);
+  Vector2f t10 = Vector2f(1.0f, 0.0f);
+  Vector2f t11 = Vector2f(1.0f, 1.0f);
+
+  Vertices[0] = Vertex(Vector3f(0.5f, 0.5f, 0.5f), t00);
+  Vertices[1] = Vertex(Vector3f(-0.5f, 0.5f, -0.5f), t01);
+  Vertices[2] = Vertex(Vector3f(-0.5f, 0.5f, 0.5f), t10);
+  Vertices[3] = Vertex(Vector3f(0.5f, -0.5f, -0.5f), t11);
+  Vertices[4] = Vertex(Vector3f(-0.5f, -0.5f, -0.5f), t00);
+  Vertices[5] = Vertex(Vector3f(0.5f, 0.5f, -0.5f), t10);
+  Vertices[6] = Vertex(Vector3f(0.5f, -0.5f, 0.5f), t01);
+  Vertices[7] = Vertex(Vector3f(-0.5f, -0.5f, 0.5f), t11);
 
   glGenBuffers(1,&VBO);
   glBindBuffer(GL_ARRAY_BUFFER, VBO);
@@ -286,10 +294,19 @@ int main(int argc, char** argv)
   glFrontFace(GL_CW);
   glCullFace(GL_BACK);
 
+  int texture_units = 0;
+  glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &texture_units);
+  printf("Texture units: %d\n", texture_units);
+
   CreateVertexBuffer();
   CreateIndexBuffer();
 
   CompileShaders();
+
+  texture = new Texture(GL_TEXTURE_2D, "../craft.png");
+  if (!texture->Load()){
+    return 1;
+  }
 
   glutMainLoop();
 
