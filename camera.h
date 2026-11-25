@@ -28,8 +28,8 @@ class Camera
     int windowWidth;
     int windowHeight;
 
-    float AngleH;
-    float AngleV;
+    float AngleH = 0.0f;
+    float AngleV = 0.0f;
 
     Vector2i mouse_position;
 

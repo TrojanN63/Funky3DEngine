@@ -21,7 +21,7 @@ Camera::Camera(int WindowWidth, int WindowHeight, const Vector3f& Pos, const Vec
 
 void Camera::Init()
 {
-  Vector3f HTarget(target.x, 0.0f, target.z);
+  /*Vector3f HTarget(target.x, 0.0f, target.z);
   HTarget.Normalize();
 
   float Angle = asin(abs(HTarget.z));
@@ -34,13 +34,13 @@ void Camera::Init()
     }
   }else{
     if (HTarget.x >= 0.0f){
-      AngleH = Angle;
+      AngleH = asin(-HTarget.z);
     }else{
-      AngleH = 4 * atan(1) - Angle;
+      AngleH = 4 * atan(1) - asin(-HTarget.z);
     }
   }
 
-  AngleV = -asin(target.y);
+  AngleV = -asin(target.y); */
 
   mouse_position.x = windowWidth / 2;
   mouse_position.y = windowHeight / 2;
@@ -60,9 +60,9 @@ void Camera::Mouse(int x, int y)
     AngleV += (float)DeltaY / 5000.0f;
   }
 
-  Update();
-
   glutWarpPointer(windowWidth / 2, windowHeight / 2);
+
+  Update();
 }
 
 void Camera::Update()
@@ -71,6 +71,7 @@ void Camera::Update()
 
   Vector3f View(0.0f, 0.0f, 1.0f);
   View.Rotate(AngleH, Yaxis);
+  View.Normalize();
 
   Vector3f U = Yaxis.Cross(View);
   U.Normalize();

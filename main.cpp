@@ -280,6 +280,7 @@ int main(int argc, char** argv)
   InitializeGlutCallbacks();
   glutIgnoreKeyRepeat(1);
   glutSetCursor(GLUT_CURSOR_NONE);
+  glutWarpPointer(width / 2, height / 2);
 
   GLenum res = glewInit();
   if (res != GLEW_OK){
