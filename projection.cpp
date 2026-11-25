@@ -5,8 +5,8 @@ Projection::Projection(int _w, int _h)
 {
   width = _w;
   height = _h;
-  FOV = 0.5f;
-  nZ = 1.0f;
+  FOV = 2*atan(1);
+  nZ = 0.0f;
   fZ = 100.0f;
 }
 

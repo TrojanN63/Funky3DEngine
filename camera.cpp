@@ -8,12 +8,12 @@ Camera::Camera(int WindowWidth, int WindowHeight, const Vector3f& Pos, const Vec
   windowWidth = WindowWidth;
   windowHeight = WindowHeight;
 
-  position = Vector3f(0.0f, 0.0f, 0.0f);
+  position = Pos;
 
-  target = Vector3f(0.0f, 0.0f, 1.0f);
+  target = Target;
   target.Normalize();
 
-  up = Vector3f(0.0f, 1.0f, 0.0f);
+  up = Up;
   up.Normalize();
 
   Init();
@@ -55,7 +55,10 @@ void Camera::Mouse(int x, int y)
   int DeltaY = y - windowHeight/2;
 
   AngleH += (float)DeltaX / 2000.0f;
-  AngleV += (float)DeltaY / 5000.0f;
+
+  if (AngleV + (float)DeltaY / 5000.0f <= 2*atan(1) && AngleV + (float)DeltaY / 5000.0f >= -2*atan(1)){
+    AngleV += (float)DeltaY / 5000.0f;
+  }
 
   Update();
 
@@ -68,7 +71,6 @@ void Camera::Update()
 
   Vector3f View(0.0f, 0.0f, 1.0f);
   View.Rotate(AngleH, Yaxis);
-  View.Normalize();
 
   Vector3f U = Yaxis.Cross(View);
   U.Normalize();
@@ -76,6 +78,9 @@ void Camera::Update()
 
   target = View;
   target.Normalize();
+
+  up = target.Cross(U);
+  up.Normalize();
 
 }
 
@@ -95,25 +100,29 @@ void Camera::KeyUp(unsigned char key)
 
 void Camera::Move()
 {
+  float move_speed = speed;
+  if ((Keys['w'] || Keys['s']) && (Keys['a'] || Keys['d'])){
+    move_speed /= sqrtf(2);
+  }
+  Vector3f Yaxis(0.0f, 1.0f, 0.0f);
+  Vector3f View(0.0f, 0.0f, 1.0f);
+  View.Rotate(AngleH, Yaxis);
+  View *= move_speed;
+  Vector3f Front(View.x, 0.0f, View.z);
+  Vector3f Left = target.Cross(up);
+  Left *= move_speed/2;
+
   if (Keys['w']){
-    Vector3f Front(target.x, 0.0f, target.z);
-    Front *= speed;
     position += Front;
   }
   if (Keys['s']){
-    Vector3f Front(target.x, 0.0f, target.z);
-    Front *= speed;
     position -= Front;
   }
   if (Keys['a']){
-    Vector3f Left = target.Cross(up);
-    Left *= speed/2;
     position += Left;
   }
   if (Keys['d']){
-    Vector3f Right = up.Cross(target);
-    Right*=speed/2;
-    position += Right;
+    position -= Left;
   }
 }
 

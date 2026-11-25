@@ -26,7 +26,7 @@ int width = 1920;
 int height = 1200;
 
 Transform Cube;
-Vector3f CameraPos(0.0f, 0.0f, 0.0f);
+Vector3f CameraPos(0.0f, 1.0f, 0.0f);
 Vector3f CameraTarget(0.0f, 0.0f, 1.0f);
 Vector3f CameraUp(0.0f, 1.0f, 0.0f);
 Camera Player(width, height, CameraPos, CameraTarget, CameraUp);
